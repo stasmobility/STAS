@@ -1,11 +1,1 @@
-{
-  "name":"STAS Mobility",
-  "short_name":"STAS",
-  "description":"Mobility assessment, training and progress.",
-  "start_url":"./?v=210",
-  "scope":"./",
-  "display":"standalone",
-  "background_color":"#080808",
-  "theme_color":"#080808",
-  "icons":[{"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
-}
+{"name":"STAS — The Architecture of the Body","short_name":"STAS","start_url":"./?v=300","display":"standalone","background_color":"#070707","theme_color":"#070707","icons":[{"src":"./assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
