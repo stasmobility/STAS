@@ -11,7 +11,31 @@ let S={...defaults,...JSON.parse(localStorage.getItem('stas3')||'{}')};
 let player={queue:[],index:0,phase:'idle',left:0,total:0,running:false,raf:0,last:0,count:3};
 let audio={ctx:null,master:null,osc:[],on:false};
 const app=document.querySelector('#app'); const tr=(de,en)=>S.lang==='de'?de:en; const exn=e=>S.lang==='de'?e.de:e.en;
-function imageFor(e){if(S.sex!=='female')return IMG+e.img;const map={hip:'female-pigeon.webp',hamstring:'female-pancake.webp',adductor:'female-frog.webp',ankle:'female-front-split.webp',shoulder:'female-pigeon.webp',spine:'female-pigeon.webp',core:'female-frog.webp',full:'female-front-split.webp'};if(e.id.includes('split'))return FEMALE_IMG+'female-front-split.webp';if(e.id==='pancake')return FEMALE_IMG+'female-pancake.webp';if(e.id==='frog')return FEMALE_IMG+'female-frog.webp';return FEMALE_IMG+(map[e.area]||'female-pigeon.webp')}
+function imageFor(e){
+  const exactMale={
+    bridge:'./assets/male/male-glute-bridge.webp',
+    frog:'./assets/male/male-frog-stretch.webp',
+    'hip-switch':'./assets/male/male-pigeon-stretch.webp',
+    couch:'./assets/male/male-lunge-stretch.webp',
+    'split-prep':'./assets/male/male-front-split.webp',
+    'split-slide':'./assets/male/male-front-split.webp'
+  };
+  const exactFemale={
+    bridge:'./assets/female/female-glute-bridge.webp',
+    frog:'./assets/female/female-frog-stretch.webp',
+    'hip-switch':'./assets/female/female-pigeon-stretch.webp',
+    couch:'./assets/female/female-lunge-stretch.webp',
+    'split-prep':'./assets/female/female-front-split.webp',
+    'split-slide':'./assets/female/female-front-split.webp',
+    pancake:'./assets/female/female-front-split.webp'
+  };
+  if(S.sex==='female'){
+    if(exactFemale[e.id])return exactFemale[e.id];
+    const femaleFallback={hip:'female-pigeon-stretch.webp',hamstring:'female-front-split.webp',adductor:'female-frog-stretch.webp',ankle:'female-lunge-stretch.webp',shoulder:'female-pigeon-stretch.webp',spine:'female-pigeon-stretch.webp',core:'female-glute-bridge.webp',full:'female-lunge-stretch.webp'};
+    return './assets/female/'+(femaleFallback[e.area]||'female-pigeon-stretch.webp');
+  }
+  return exactMale[e.id]||IMG+e.img;
+}
 function goalTitle(key){const g=goals[key];if(key==='front')return S.sex==='female'?tr('Frauen-Spagat · Front Split','Women’s Split · Front Split'):tr('Männer-Spagat · Front Split','Men’s Split · Front Split');if(key==='middle')return S.sex==='female'?tr('Frauen-Spagat · Seitspagat','Women’s Split · Middle Split'):tr('Männer-Spagat · Seitspagat','Men’s Split · Middle Split');return g[S.lang]}
 function goalDesc(key){const g=goals[key];if(key==='front')return S.sex==='female'?tr('Finalziel: kontrollierter Längsspagat mit stabilem Becken.','Final goal: controlled front split with a stable pelvis.'):tr('Finalziel: kraftvoller Längsspagat mit aktiver Hüftkontrolle.','Final goal: strong front split with active hip control.');if(key==='middle')return tr('Finalziel: vollständiger Seitspagat mit aktiver Adduktorenkontrolle.','Final goal: full middle split with active adductor control.');return g.desc}
 function save(){localStorage.setItem('stas3',JSON.stringify(S))} function set(p){Object.assign(S,p);save();render()}
@@ -43,4 +67,4 @@ function tone(f,d,type='sine',gain=.12){try{audio.ctx ||= new (window.AudioConte
 function playCountdown(stage='tick'){if(!S.countdownSound)return;const sounds={softBell:()=>{tone(stage==='go'?1046:880,.32,'sine',.16);setTimeout(()=>tone(stage==='go'?1568:1320,.22,'sine',.08),35)},wood:()=>tone(stage==='go'?360:260,.09,'square',.12),chime:()=>{tone(stage==='go'?1174:784,.24,'triangle',.12);setTimeout(()=>tone(stage==='go'?1760:1174,.2,'sine',.07),45)},digital:()=>tone(stage==='go'?980:700,.07,'square',.08),classic:()=>tone(stage==='go'?880:660,.12,'sine',.12)};(sounds[S.sound]||sounds.softBell)();if(S.vibration&&navigator.vibrate)navigator.vibrate(stage==='go'?[70,40,110]:35)}
 function assessment(){const v=prompt(tr('Wie beweglich fühlst du dich heute? 1–10','How mobile do you feel today? 1–10'),'6');if(v){S.score=Math.max(10,Math.min(100,Number(v)*10));save();render()}}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.lang!==undefined)set({lang:S.lang==='de'?'en':'de'});if(b.dataset.go){location.hash=b.dataset.go;render()}if(b.dataset.sex)set({sex:b.dataset.sex});if(b.dataset.level)set({level:b.dataset.level});if(b.dataset.goal)set({goal:b.dataset.goal});if(b.hasAttribute('data-ob-next')){let s=Number(sessionStorage.getItem('obStep')||0);if(s<3){sessionStorage.setItem('obStep',++s);onboard(s)}else{S.onboarded=true;S.score=30;save();sessionStorage.removeItem('obStep');render()}}if(b.hasAttribute('data-ob-prev')){let s=Math.max(0,Number(sessionStorage.getItem('obStep')||0)-1);sessionStorage.setItem('obStep',s);onboard(s)}if(b.hasAttribute('data-start'))startSession();if(b.hasAttribute('data-assess'))assessment();if(b.hasAttribute('data-stop')){player.running=false;stopAudio();location.hash='home';render()}if(b.hasAttribute('data-pause')){player.running=!player.running;if(player.running){player.last=performance.now();player.raf=requestAnimationFrame(loop)}render()}if(b.hasAttribute('data-next'))nextExercise();if(b.hasAttribute('data-prev')&&player.index){player.index--;player.phase='countdown';player.count=3;player.left=1;render()}if(b.hasAttribute('data-music')){audio.on?stopAudio():startAudio();render()}if(b.hasAttribute('data-finish')){location.hash='home';render()}if(b.hasAttribute('data-preview'))playCountdown('go');if(b.hasAttribute('data-reset')){localStorage.removeItem('stas3');location.reload()}if(b.dataset.filter){const f=b.dataset.filter;document.querySelector('#lib').innerHTML=exercises.filter(x=>f==='all'||x.area===f).map(card).join('')}});
-document.addEventListener('change',e=>{if(e.target.dataset.setting)set({[e.target.dataset.setting]:e.target.value});if(e.target.hasAttribute('data-volume'))set({volume:Number(e.target.value)});if(e.target.hasAttribute('data-effects'))set({effectsVolume:Number(e.target.value)});if(e.target.hasAttribute('data-countdown'))set({countdownSound:e.target.checked});if(e.target.hasAttribute('data-vibration'))set({vibration:e.target.checked})});window.addEventListener('hashchange',render);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=310');render();
+document.addEventListener('change',e=>{if(e.target.dataset.setting)set({[e.target.dataset.setting]:e.target.value});if(e.target.hasAttribute('data-volume'))set({volume:Number(e.target.value)});if(e.target.hasAttribute('data-effects'))set({effectsVolume:Number(e.target.value)});if(e.target.hasAttribute('data-countdown'))set({countdownSound:e.target.checked});if(e.target.hasAttribute('data-vibration'))set({vibration:e.target.checked})});window.addEventListener('hashchange',render);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=320');render();

@@ -5,3 +5,6 @@
 .timer-ring{will-change:background;transform:translateZ(0)}
 .session-image img,.img-wrap img,.model-card img{background:#0b0b0b}
 .session-image img{object-position:center}
+
+/* STAS 3.2 image quality pass */
+.session-image img,.img-wrap img{object-fit:contain;background:#050505}.session-image{background:#050505}.img-wrap{background:#050505}.img-wrap img{padding:4px}
