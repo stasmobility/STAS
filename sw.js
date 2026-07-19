@@ -1,12 +1,56 @@
-const C='stas-4.1.0';
-const CORE=['./','./index.html','./styles.css?v=410','./app.js?v=410','./manifest.webmanifest?v=410','./assets/hero.webp','./assets/icon.svg'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{
-  const u=new URL(e.request.url);
-  if(e.request.mode==='navigate'||/\.(?:js|css)$/.test(u.pathname)){
-    e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(C).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{const c=x.clone();caches.open(C).then(y=>y.put(e.request,c));return x})));
+const CACHE_VERSION = 'stas-4.1-network-first-v2-exercise-fix';
+const APP_SHELL = [
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.webmanifest',
+  './assets/icon.svg',
+  './assets/hero.webp'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_VERSION)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE_VERSION).map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_VERSION);
+
+    try {
+      // Immer zuerst beim Server prüfen. "no-store" verhindert den Browser-HTTP-Cache.
+      const fresh = await fetch(request, { cache: 'no-store' });
+      if (fresh && fresh.ok) await cache.put(request, fresh.clone());
+      return fresh;
+    } catch (error) {
+      // Offline: exakte Ressource aus dem Cache verwenden.
+      const cached = await cache.match(request, { ignoreSearch: true });
+      if (cached) return cached;
+
+      // Navigationen fallen auf die zuletzt gespeicherte Startseite zurück.
+      if (request.mode === 'navigate') {
+        const fallback = await cache.match('./index.html');
+        if (fallback) return fallback;
+      }
+
+      throw error;
+    }
+  })());
 });

@@ -43,3 +43,20 @@
 .entry-panel{border:1px solid var(--line);background:#0d0d0d;border-radius:var(--r);padding:28px}.entry-step{display:flex;gap:15px;align-items:center;margin:28px 0 14px}.entry-step:first-child{margin-top:0}.entry-step>span{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#080808;font-weight:800}.entry-step h2{margin:2px 0 0}.entry-step .kicker{margin:0}.level-list.compact{grid-template-columns:repeat(4,1fr);display:grid;gap:9px}.level-list.compact button{min-height:92px}.entry-actions{display:flex;gap:10px;margin-top:25px}.entry-actions .btn{flex:1;min-height:52px}
 @media(max-width:760px){.entry-hero{padding:24px;flex-direction:column}.entry-panel{padding:18px}.level-list.compact{grid-template-columns:1fr 1fr}.entry-actions{flex-direction:column}}
 @media(max-width:430px){.level-list.compact{grid-template-columns:1fr}.entry-hero h1{font-size:39px}}
+
+/* 4.1.2: Übungskarten sind echte, vollständig klickbare Schaltflächen. */
+button.ex-card {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: inherit;
+  cursor: pointer;
+}
+button.ex-card:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+button.ex-card:active { transform: scale(.985); }
