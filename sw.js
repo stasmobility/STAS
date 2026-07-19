@@ -1,1 +1,12 @@
-const C='stas-3.3.0';const A=["./", "./index.html", "./styles.css?v=330", "./app.js?v=330", "./manifest.webmanifest?v=330", "./assets/hero.webp", "./assets/icon.svg", "./assets/exercises/01-deep-squat.webp", "./assets/exercises/02-couch-stretch.webp", "./assets/exercises/03-cat-cow.webp", "./assets/exercises/04-glute-bridge.webp", "./assets/exercises/05-dead-bug.webp", "./assets/exercises/06-side-plank.webp", "./assets/exercises/07-hip-switch.webp", "./assets/exercises/08-worlds-greatest-stretch.webp", "./assets/exercises/09-thoracic-rotation.webp", "./assets/exercises/10-hamstring-sweep.webp", "./assets/exercises/11-lunge-with-twist.webp", "./assets/female/female-frog.webp", "./assets/female/female-front-split.webp", "./assets/female/female-pancake.webp", "./assets/female/female-pigeon.webp"];self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(A)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{let y=x.clone();caches.open(C).then(c=>c.put(e.request,y));return x}).catch(()=>caches.match('./index.html')))));
+const C='stas-3.4.0';
+const CORE=['./','./index.html','./styles.css?v=340','./app.js?v=340','./manifest.webmanifest?v=340','./assets/hero.webp','./assets/icon.svg'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{
+  const u=new URL(e.request.url);
+  if(e.request.mode==='navigate'||/\.(?:js|css)$/.test(u.pathname)){
+    e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(C).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{const c=x.clone();caches.open(C).then(y=>y.put(e.request,c));return x})));
+});
