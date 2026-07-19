@@ -1,5 +1,5 @@
-const C='stas-3.4.0';
-const CORE=['./','./index.html','./styles.css?v=340','./app.js?v=340','./manifest.webmanifest?v=340','./assets/hero.webp','./assets/icon.svg'];
+const C='stas-4.1.0';
+const CORE=['./','./index.html','./styles.css?v=410','./app.js?v=410','./manifest.webmanifest?v=410','./assets/hero.webp','./assets/icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
