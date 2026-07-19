@@ -1,9 +1,0 @@
-DirectoryIndex index.html
-AddType application/manifest+json .webmanifest
-AddType image/webp .webp
-<IfModule mod_headers.c>
-  Header set X-Content-Type-Options "nosniff"
-  <FilesMatch "\.(html|js|css|webmanifest)$">
-    Header set Cache-Control "no-cache, must-revalidate"
-  </FilesMatch>
-</IfModule>
